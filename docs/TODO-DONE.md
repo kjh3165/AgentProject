@@ -1,3 +1,3 @@
 # TODO DONE
 
-(아직 완료된 작업이 없습니다.)
+- [x] Task 1: Supabase 프로젝트 연결 및 초기 DB 스키마 설정

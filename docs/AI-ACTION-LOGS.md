@@ -7,3 +7,5 @@
 - [2026-05-14] categories 테이블에 color, icon 필드를 추가하는 마이그레이션 파일(20260514000000_add_category_style_fields.sql) 생성 및 도메인 문서 업데이트 완료
 - [2026-05-14] 사용자 제공 기록을 바탕으로 TODO 문서(READY, BACKLOG) 정리 및 최신화 완료
 - [2026-05-14] 완료된 1차 MVP 기능들을 TODO-DONE.md와 동기화하여 중복 항목 제거
+
+- [2026-05-17] 2단계: Supabase 연결 설정 및 DB 마이그레이션 파일(init_accounting, enable_realtime 등) 이식 완료
