@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from './lib/supabase'
 import AuthForm from './components/Auth/AuthForm'
 import Header from './components/Layout/Header'
+import Dashboard from './pages/Dashboard'
 import Transactions from './pages/Transactions'
 import Categories from './pages/Categories'
 import { Session } from '@supabase/supabase-js'
@@ -40,10 +41,10 @@ function App() {
         <Header userEmail={session.user.email || ''} />
         <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <Routes>
+            <Route path="/" element={<Dashboard />} />
             <Route path="/transactions" element={<Transactions userId={session.user.id} />} />
             <Route path="/categories" element={<Categories userId={session.user.id} />} />
-            <Route path="/" element={<Navigate to="/transactions" replace />} />
-            <Route path="*" element={<Navigate to="/transactions" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
       </div>
