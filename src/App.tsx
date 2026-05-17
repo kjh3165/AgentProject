@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from './lib/supabase'
 import AuthForm from './components/Auth/AuthForm'
+import Header from './components/Layout/Header'
+import Transactions from './pages/Transactions'
+import Categories from './pages/Categories'
 import { Session } from '@supabase/supabase-js'
 
 function App() {
@@ -31,16 +35,19 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
-      <h1 className="text-2xl font-bold mb-4">로그인 성공!</h1>
-      <p className="text-gray-600 mb-8">{session.user.email}님, 환영합니다.</p>
-      <button 
-        onClick={() => supabase.auth.signOut()}
-        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-      >
-        로그아웃
-      </button>
-    </div>
+    <BrowserRouter>
+      <div className="min-h-screen bg-gray-50">
+        <Header userEmail={session.user.email || ''} />
+        <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+          <Routes>
+            <Route path="/transactions" element={<Transactions userId={session.user.id} />} />
+            <Route path="/categories" element={<Categories userId={session.user.id} />} />
+            <Route path="/" element={<Navigate to="/transactions" replace />} />
+            <Route path="*" element={<Navigate to="/transactions" replace />} />
+          </Routes>
+        </main>
+      </div>
+    </BrowserRouter>
   )
 }
 
