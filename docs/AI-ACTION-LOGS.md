@@ -9,3 +9,4 @@
 - [2026-05-14] 완료된 1차 MVP 기능들을 TODO-DONE.md와 동기화하여 중복 항목 제거
 
 - [2026-05-17] 2단계: Supabase 연결 설정 및 DB 마이그레이션 파일(init_accounting, enable_realtime 등) 이식 완료
+- [2026-05-17] 3단계: Supabase Auth 연동 및 AuthForm 컴포넌트 이식 완료 (인증 시스템 활성화)
