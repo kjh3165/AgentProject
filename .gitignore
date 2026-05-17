@@ -1,47 +1,28 @@
-# --- 기본 로그 및 캐시 ---
+# Logs
 logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
-.eslintcache
+pnpm-debug.log*
+lerna-debug.log*
 
-# --- 종속성 및 빌드 결과물 ---
-node_modules/
-dist/
-dist-ssr/
-*.tsbuildinfo
+node_modules
+dist
+dist-ssr
+*.local
 
-# --- 환경 변수 및 비밀 정보 ---
-.env
-.env.local
-.env.*.local
-.env.development.local
-.env.test.local
-.env.production.local
-auth_key
-*.pem
-
-# --- 에디터 및 OS 설정 ---
+# Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-!.vscode/settings.json
-!.vscode/launch.json
-.idea/
+.idea
 .DS_Store
-Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-# --- Supabase ---
-supabase/.temp/
-supabase/.branches/
-supabase/storage/
-supabase/.env.local
-
-# --- 기타 ---
-.npm
+# Supabase
+supabase/.temp
+supabase/.branches
