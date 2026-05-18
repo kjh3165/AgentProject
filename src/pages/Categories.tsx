@@ -17,6 +17,25 @@ interface CategoriesProps {
   userId: string
 }
 
+const getColorHex = (color: string) => {
+  if (!color) return '#6B7280'
+  if (color.startsWith('#')) return color
+
+  const colorMap: Record<string, string> = {
+    'red-500': '#EF4444', 'orange-500': '#F97316', 'amber-500': '#F59E0B',
+    'yellow-500': '#EAB308', 'green-500': '#10B981', 'emerald-500': '#10B981',
+    'teal-500': '#14B8A6', 'blue-500': '#3B82F6', 'indigo-500': '#6366F1',
+    'purple-500': '#8B5CF6', 'pink-500': '#EC4899', 'rose-500': '#F43F5E',
+    'gray-500': '#6B7280', 'red-600': '#DC2626', 'orange-600': '#EA580C',
+    'amber-600': '#D97706', 'yellow-600': '#CA8A04', 'green-600': '#059669',
+    'emerald-600': '#059669', 'teal-600': '#0D9488', 'blue-600': '#2563EB',
+    'indigo-600': '#4F46E5', 'purple-600': '#7C3AED', 'pink-600': '#DB2777',
+    'rose-600': '#E11D48', 'gray-600': '#4B5563',
+  }
+
+  return colorMap[color] || '#6B7280'
+}
+
 export default function Categories({ userId }: CategoriesProps) {
   const [categories, setCategories] = useState<Category[]>([])
   const [activeTab, setActiveTab] = useState<'expense' | 'income'>('expense')
