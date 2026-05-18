@@ -7,9 +7,9 @@ ADD COLUMN IF NOT EXISTS icon TEXT DEFAULT 'Tag';
 -- Expenses
 UPDATE categories SET color = '#EF4444', icon = 'Utensils' WHERE name = '식비' AND user_id IS NULL;
 UPDATE categories SET color = '#3B82F6', icon = 'Car' WHERE name = '교통비' AND user_id IS NULL;
-UPDATE categories SET color = '#10B981', icon = 'Home' WHERE name = '주거비' AND user_id IS NULL;
+UPDATE categories SET color = '#F59E0B', icon = 'Home' WHERE name = '주거비' AND user_id IS NULL;
 UPDATE categories SET color = '#8B5CF6', icon = 'Gamepad2' WHERE name = '문화/취미' AND user_id IS NULL;
-UPDATE categories SET color = '#F59E0B', icon = 'ShoppingBag' WHERE name = '생활용품' AND user_id IS NULL;
+UPDATE categories SET color = '#EAB308', icon = 'ShoppingBag' WHERE name = '생활용품' AND user_id IS NULL;
 UPDATE categories SET color = '#10B981', icon = 'HeartPulse' WHERE name = '의료/건강' AND user_id IS NULL;
 UPDATE categories SET color = '#6B7280', icon = 'MoreHorizontal' WHERE name = '기타 지출' AND user_id IS NULL;
 
