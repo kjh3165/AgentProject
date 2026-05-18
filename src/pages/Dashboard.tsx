@@ -115,7 +115,7 @@ export default function Dashboard() {
               id: cat.id,
               name: cat.name,
               value: 0,
-              color: cat.color || '#94a3b8',
+              color: getColorHex(cat.color),
               icon: cat.icon || 'Tag'
             }
             existing.value += Number(t.amount)

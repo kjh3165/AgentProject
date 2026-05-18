@@ -180,22 +180,21 @@ export default function Categories({ userId }: CategoriesProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredCategories.map((category) => {
                 const IconComponent = (Icons as any)[category.icon] || Icons.Tag
-                const colorHex = category.color || '#6B7280'
+                const colorHex = getColorHex(category.color)
                 
                 return (
                   <div
                     key={category.id}
                     className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:shadow-md transition-all group relative"
                   >
-                    {/* 사용자의 제안대로 색상 박스와 아이콘을 분리함 */}
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <div 
-                        className="w-3 h-10 rounded-full shadow-sm"
+                        className="w-3 h-10 rounded-full shadow-sm transition-transform group-hover:scale-y-110"
                         style={{ backgroundColor: colorHex }}
-                        title="카테고리 색상"
+                        title={`색상: ${colorHex}`}
                       />
-                      <div className="p-2.5 rounded-lg bg-white shadow-sm text-gray-700">
-                        <IconComponent size={24} strokeWidth={2} />
+                      <div className="p-2.5 rounded-lg bg-white shadow-sm" style={{ color: colorHex }}>
+                        <IconComponent size={24} strokeWidth={2.5} />
                       </div>
                     </div>
 
