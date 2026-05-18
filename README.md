@@ -59,33 +59,35 @@ React 기반 프론트엔드와 Supabase 기반 백엔드를 활용해 구현했
 ---
 
 ## 프로젝트 구조
+```bash
 src
-│  App.tsx
-│  index.css
-│  main.tsx
-│  vite-env.d.ts
-│  
-├─components
-│  ├─Auth
-│  │      AuthForm.tsx
-│  │      
-│  ├─Categories
-│  │      CategoryForm.tsx
-│  │      
-│  ├─Layout
-│  │      Header.tsx
-│  │      
-│  └─Transactions
-│          TransactionForm.tsx
-│          TransactionList.tsx
-│          
-├─lib
-│      supabase.ts
-│      
-└─pages
-        Categories.tsx
-        Dashboard.tsx
-        Transactions.tsx
+├── App.tsx
+├── index.css
+├── main.tsx
+├── vite-env.d.ts
+│
+├── components
+│   ├── Auth
+│   │   └── AuthForm.tsx
+│   │
+│   ├── Categories
+│   │   └── CategoryForm.tsx
+│   │
+│   ├── Layout
+│   │   └── Header.tsx
+│   │
+│   └── Transactions
+│       ├── TransactionForm.tsx
+│       └── TransactionList.tsx
+│
+├── lib
+│   └── supabase.ts
+│
+└── pages
+    ├── Categories.tsx
+    ├── Dashboard.tsx
+    └── Transactions.tsx
+```
 
 ---
 
