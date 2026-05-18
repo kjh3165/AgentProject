@@ -271,7 +271,7 @@ export default function Dashboard() {
                     paddingAngle={5}
                     dataKey="value"
                     stroke="none"
-                    onMouseEnter={(_, index) => setActiveIndex(index)}
+                    onMouseEnter={(_: any, index: number) => setActiveIndex(index)}
                     onMouseLeave={() => setActiveIndex(-1)}
                     animationBegin={0}
                     animationDuration={800}
