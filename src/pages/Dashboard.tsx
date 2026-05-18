@@ -2,16 +2,10 @@ import { useEffect, useState, ChangeEvent, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sector } from 'recharts'
 import { 
-  Wallet, TrendingUp, TrendingDown, LayoutDashboard, ArrowRightLeft, Tag,
-  ShoppingBag, Coffee, Car, Home, Utensils, Gift, Heart, Dumbbell, Plane,
-  Book, Monitor, Smartphone, Briefcase, Zap, Plus, ChevronLeft, ChevronRight, Calendar
+  Wallet, TrendingUp, TrendingDown, LayoutDashboard, Tag,
+  ChevronLeft, ChevronRight, Calendar
 } from 'lucide-react'
 import * as LucideIcons from 'lucide-react'
-
-const ICON_MAP: Record<string, any> = {
-  ShoppingBag, Coffee, Car, Home, Utensils, Gift, Heart, Dumbbell, Plane,
-  Book, Monitor, Smartphone, Briefcase, Zap, Plus, Tag, Wallet
-};
 
 interface StatData {
   id: string
@@ -267,7 +261,7 @@ export default function Dashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    activeIndex={activeIndex}
+                    {...({ activeIndex } as any)}
                     activeShape={renderActiveShape}
                     data={chartData}
                     cx="50%"
@@ -286,7 +280,7 @@ export default function Dashboard() {
                       <Cell key={`cell-${index}`} fill={entry.color} style={{ opacity: activeIndex === -1 || activeIndex === index ? 1 : 0.6, transition: 'opacity 0.2s' }} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: number) => `₩ ${value.toLocaleString()}`} contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 15px 35px rgba(0,0,0,0.1)' }} />
+                  <Tooltip formatter={(value: any) => `₩ ${Number(value).toLocaleString()}`} contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 15px 35px rgba(0,0,0,0.1)' }} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">

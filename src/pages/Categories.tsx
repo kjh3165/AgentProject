@@ -70,7 +70,7 @@ export default function Categories({ userId }: CategoriesProps) {
       setLoading(true)
 
       // 1. 해당 타입(지출/수입)의 '미지정' 카테고리 확인 또는 생성
-      let { data: uncategorized, error: findError } = await supabase
+      let { data: uncategorized } = await supabase
         .from('categories')
         .select('id')
         .eq('user_id', userId)
