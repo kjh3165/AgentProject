@@ -1,1 +1,9 @@
 @import "tailwindcss";
+
+/* Recharts Focus Outline Reset */
+.recharts-wrapper:focus,
+.recharts-surface:focus,
+.recharts-sector:focus,
+svg:focus {
+  outline: none !important;
+}

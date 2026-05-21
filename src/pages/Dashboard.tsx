@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sector } from 'recharts'
 import { 
   Wallet, TrendingUp, TrendingDown, LayoutDashboard, Tag,
-  ChevronLeft, ChevronRight, Calendar
+  ChevronLeft, ChevronRight, Calendar, ChevronUp, ChevronDown
 } from 'lucide-react'
 import * as LucideIcons from 'lucide-react'
 
@@ -63,9 +63,13 @@ export default function Dashboard() {
     expense: 0,
     balance: 0,
   })
-  const [chartData, setChartData] = useState<StatData[]>([])
+  const [expenseChartData, setExpenseChartData] = useState<StatData[]>([])
+  const [incomeChartData, setIncomeChartData] = useState<StatData[]>([])
+  const [showIncomeChart, setShowIncomeChart] = useState(true)
+  const [showExpenseChart, setShowExpenseChart] = useState(true)
   const [loading, setLoading] = useState(true)
-  const [activeIndex, setActiveIndex] = useState(-1)
+  const [activeExpenseIndex, setActiveExpenseIndex] = useState(-1)
+  const [activeIncomeIndex, setActiveIncomeIndex] = useState(-1)
   const monthInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -124,24 +128,33 @@ export default function Dashboard() {
           balance: income - expense,
         })
 
-        const categoryMap = new Map<string, StatData>()
+        const expenseMap = new Map<string, StatData>()
+        const incomeMap = new Map<string, StatData>()
         
-        transactions
-          .filter(t => t.type === 'expense' && t.categories)
-          .forEach(t => {
-            const cat = t.categories as any
-            const existing = categoryMap.get(cat.id) || {
-              id: cat.id,
-              name: cat.name,
-              value: 0,
-              color: getColorHex(cat.color),
-              icon: cat.icon || 'Tag'
-            }
-            existing.value += Number(t.amount)
-            categoryMap.set(cat.id, existing)
-          })
+        transactions.forEach(t => {
+          if (!t.categories) return;
+          const cat = t.categories as any;
+          const statItem = {
+            id: cat.id,
+            name: cat.name,
+            value: 0,
+            color: getColorHex(cat.color),
+            icon: cat.icon || 'Tag'
+          };
 
-        setChartData(Array.from(categoryMap.values()).sort((a, b) => b.value - a.value))
+          if (t.type === 'expense') {
+            const existing = expenseMap.get(cat.id) || { ...statItem };
+            existing.value += Number(t.amount);
+            expenseMap.set(cat.id, existing);
+          } else if (t.type === 'income') {
+            const existing = incomeMap.get(cat.id) || { ...statItem };
+            existing.value += Number(t.amount);
+            incomeMap.set(cat.id, existing);
+          }
+        });
+
+        setExpenseChartData(Array.from(expenseMap.values()).sort((a, b) => b.value - a.value))
+        setIncomeChartData(Array.from(incomeMap.values()).sort((a, b) => b.value - a.value))
       }
     } catch (error: any) {
       console.error('Error fetching dashboard data:', error.message)
@@ -179,23 +192,22 @@ export default function Dashboard() {
   const monthValue = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-in fade-in duration-500 pb-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="text-2xl font-black text-gray-800 flex items-center gap-2">
           <LayoutDashboard className="w-7 h-7 text-indigo-600" />
           자산 대시보드
         </h2>
-        
+
         <div className="flex items-center bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100">
           <button onClick={() => changeMonth(-1)} className="p-2 hover:bg-gray-50 rounded-xl transition-colors text-gray-400 hover:text-indigo-600">
             <ChevronLeft className="w-5 h-5" />
           </button>
-          
+
           <div 
             onClick={triggerPicker}
             className="relative px-4 py-1 group cursor-pointer hover:bg-indigo-50/50 rounded-xl transition-colors min-w-[160px] flex flex-col items-center justify-center overflow-hidden"
           >
-            {/* '날짜 선택' 안내 문구 유지 */}
             <p className="text-[10px] font-bold text-gray-400 group-hover:text-indigo-400 transition-colors uppercase tracking-widest pointer-events-none">날짜 선택</p>
             <div className="flex items-center gap-2 pointer-events-none">
               <Calendar className="w-3.5 h-3.5 text-indigo-500" />
@@ -203,7 +215,6 @@ export default function Dashboard() {
                 {currentDate.getFullYear()}년 {currentDate.getMonth() + 1}월
               </p>
             </div>
-            {/* title 속성에서 오해의 소지가 있는 단어 제거 및 한국어 최적화 */}
             <input 
               ref={monthInputRef}
               type="month" 
@@ -267,35 +278,108 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className={`bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 flex flex-col items-center justify-center min-h-[400px] transition-all ${loading ? 'pointer-events-none opacity-60' : ''}`}>
-          <h3 className="text-lg font-bold text-gray-800 mb-6 w-full text-left">카테고리별 지출 비중</h3>
+      <div className="flex flex-col gap-8">
+        <ChartSection 
+          title="카테고리별 수입 비중"
+          data={incomeChartData}
+          total={stats.income}
+          activeIndex={activeIncomeIndex}
+          setActiveIndex={setActiveIncomeIndex}
+          isVisible={showIncomeChart}
+          onToggle={() => setShowIncomeChart(!showIncomeChart)}
+          label="총 수입"
+          accentColor="blue"
+          loading={loading}
+        />
+
+        <ChartSection 
+          title="카테고리별 지출 비중"
+          data={expenseChartData}
+          total={stats.expense}
+          activeIndex={activeExpenseIndex}
+          setActiveIndex={setActiveExpenseIndex}
+          isVisible={showExpenseChart}
+          onToggle={() => setShowExpenseChart(!showExpenseChart)}
+          label="총 지출"
+          accentColor="rose"
+          loading={loading}
+        />
+      </div>
+    </div>
+  )
+  }
+
+  const ChartSection = ({ 
+  title, 
+  data, 
+  total, 
+  activeIndex, 
+  setActiveIndex, 
+  isVisible, 
+  onToggle, 
+  label,
+  accentColor,
+  loading
+  }: { 
+  title: string, 
+  data: StatData[], 
+  total: number, 
+  activeIndex: number, 
+  setActiveIndex: (i: number) => void, 
+  isVisible: boolean, 
+  onToggle: () => void,
+  label: string,
+  accentColor: string,
+  loading: boolean
+  }) => (
+  <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-100 flex flex-col transition-all overflow-hidden">
+    <div className="flex items-center justify-between mb-2">
+      <h3 className="text-lg font-bold text-gray-800">{title}</h3>
+      <button 
+        onClick={onToggle}
+        className={`p-2 rounded-xl transition-all ${
+          isVisible 
+            ? 'text-gray-400 hover:bg-gray-100' 
+            : `bg-${accentColor}-50 text-${accentColor}-600 hover:bg-${accentColor}-100`
+        }`}
+      >
+        {isVisible ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
+      </button>
+    </div>
+
+    {isVisible && (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in slide-in-from-top-4 duration-500 mt-4">
+        <div className={`flex flex-col items-center justify-center min-h-[300px] ${loading ? 'pointer-events-none opacity-60' : ''}`}>
           {loading ? (
-             <div className="flex flex-col items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-                <p className="text-gray-400 text-sm font-bold">분석 중...</p>
-             </div>
-          ) : chartData.length > 0 ? (
-            <div className="relative w-full h-72">
+            <div className="flex flex-col items-center justify-center">
+              <div className={`animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mb-4`}></div>
+              <p className="text-gray-400 text-sm font-bold tracking-tighter">분석 중...</p>
+            </div>
+          ) : data.length > 0 ? (
+            <div className="relative w-full h-64 outline-none select-none">
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
+                <PieChart 
+                  className="outline-none" 
+                  style={{ outline: 'none' }}
+                >
                   <Pie
                     {...({ activeIndex } as any)}
                     activeShape={renderActiveShape}
-                    data={chartData}
+                    data={data}
                     cx="50%"
                     cy="50%"
-                    innerRadius={85}
-                    outerRadius={110}
+                    innerRadius={70}
+                    outerRadius={95}
                     paddingAngle={5}
                     dataKey="value"
                     stroke="none"
                     onMouseEnter={(_: any, index: number) => setActiveIndex(index)}
                     onMouseLeave={() => setActiveIndex(-1)}
                     animationBegin={0}
-                    animationDuration={800}
-                  >
-                    {chartData.map((entry, index) => (
+                    animationDuration={400}
+                    tabIndex={-1}
+                    style={{ outline: 'none' }}
+                  >                    {data.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} style={{ opacity: activeIndex === -1 || activeIndex === index ? 1 : 0.6, transition: 'opacity 0.2s' }} />
                     ))}
                   </Pie>
@@ -303,59 +387,55 @@ export default function Dashboard() {
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">총 지출</span>
-                <span className="text-2xl font-black text-gray-800">₩ {stats.expense.toLocaleString()}</span>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{label}</span>
+                <span className={`text-xl font-black text-gray-800`}>₩ {total.toLocaleString()}</span>
               </div>
             </div>
           ) : (
-            <div className="text-gray-300 flex flex-col items-center py-10 italic">데이터가 없습니다.</div>
+            <div className="text-gray-300 flex flex-col items-center py-10 italic font-bold">데이터가 없습니다.</div>
           )}
         </div>
 
-        <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
-          <h3 className="text-lg font-bold text-gray-800 mb-6">지출 상세 내역</h3>
-          <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
-            {chartData.length > 0 ? (
-              chartData.map((item, index) => {
-                const percentage = ((item.value / stats.expense) * 100).toFixed(1);
+        <div className="flex flex-col">
+          <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">상세 내역</h4>
+          <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+            {data.length > 0 ? (
+              data.map((item, index) => {
+                const percentage = ((item.value / total) * 100).toFixed(1);
                 const isActive = activeIndex === index;
                 return (
                   <div 
                     key={item.id} 
                     onMouseEnter={() => !loading && setActiveIndex(index)}
                     onMouseLeave={() => !loading && setActiveIndex(-1)}
-                    className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-200 border ${
-                      isActive ? 'bg-indigo-50/50 border-indigo-100 shadow-sm' : 'bg-white border-transparent'
+                    className={`flex items-center justify-between p-3 rounded-2xl transition-all duration-200 border ${
+                      isActive ? `bg-gray-50 border-gray-100 shadow-sm` : 'bg-white border-transparent hover:bg-gray-50'
                     }`}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <div 
-                          className="w-2.5 h-10 rounded-full shadow-sm"
-                          style={{ backgroundColor: item.color }}
-                        />
-                        <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-100 shadow-sm text-gray-700">
-                          <IconRenderer iconName={item.icon} className="w-6 h-6" />
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <div className="w-2 h-8 rounded-full shadow-sm" style={{ backgroundColor: item.color }} />
+                        <div className="p-2 rounded-lg bg-white border border-gray-100 shadow-sm text-gray-700">
+                          <IconRenderer iconName={item.icon} className="w-5 h-5" />
                         </div>
                       </div>
-
                       <div>
-                        <p className="font-black text-gray-800">{item.name}</p>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">비중 {percentage}%</p>
+                        <p className="font-bold text-gray-800 text-sm">{item.name}</p>
+                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">비중 {percentage}%</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-black text-gray-900 text-lg">₩ {item.value.toLocaleString()}</p>
+                      <p className="font-black text-gray-900">₩ {item.value.toLocaleString()}</p>
                     </div>
                   </div>
                 )
               })
             ) : (
-              <p className="text-center text-gray-300 font-bold py-20 italic">내역이 없습니다.</p>
+              <p className="text-center text-gray-300 font-bold py-10 italic">내역이 없습니다.</p>
             )}
           </div>
         </div>
       </div>
-    </div>
-  )
-}
+    )}
+  </div>
+  );
