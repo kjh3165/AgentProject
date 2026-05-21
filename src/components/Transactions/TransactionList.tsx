@@ -19,9 +19,14 @@ export interface Transaction {
 interface TransactionListProps {
   selectedMonth: string // 'YYYY-MM' 형식
   onEdit: (transaction: Transaction) => void
+  filters?: {
+    keyword: string
+    type: 'all' | 'expense' | 'income'
+    categoryId: string
+  }
 }
 
-export default function TransactionList({ selectedMonth, onEdit }: TransactionListProps) {
+export default function TransactionList({ selectedMonth, onEdit, filters }: TransactionListProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -38,7 +43,7 @@ export default function TransactionList({ selectedMonth, onEdit }: TransactionLi
     return () => {
       subscription.unsubscribe()
     }
-  }, [selectedMonth])
+  }, [selectedMonth, filters])
 
   async function fetchTransactions() {
     try {
@@ -52,7 +57,7 @@ export default function TransactionList({ selectedMonth, onEdit }: TransactionLi
       ).getDate()
       const endDate = `${selectedMonth}-${lastDay}`
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('transactions')
         .select(`
           id,
@@ -69,6 +74,20 @@ export default function TransactionList({ selectedMonth, onEdit }: TransactionLi
         `)
         .gte('date', startDate)
         .lte('date', endDate)
+
+      if (filters) {
+        if (filters.keyword) {
+          query = query.ilike('description', `%${filters.keyword}%`)
+        }
+        if (filters.type !== 'all') {
+          query = query.eq('type', filters.type)
+        }
+        if (filters.categoryId !== 'all') {
+          query = query.eq('category_id', filters.categoryId)
+        }
+      }
+
+      const { data, error } = await query
         .order('date', { ascending: false })
         .order('created_at', { ascending: false })
 
@@ -94,62 +113,73 @@ export default function TransactionList({ selectedMonth, onEdit }: TransactionLi
   }
 
   if (loading) {
-    return <div className="text-center py-10 text-gray-500">불러오는 중...</div>
+    return <div className="text-center py-20 text-gray-400 font-bold animate-pulse">불러오는 중...</div>
   }
 
   return (
-    <div className="bg-white shadow rounded-lg overflow-hidden">
-      <ul className="divide-y divide-gray-200">
+    <div className="bg-white shadow-sm border border-gray-100 rounded-[2rem] overflow-hidden">
+      <ul className="divide-y divide-gray-100">
         {transactions.length === 0 ? (
-          <li className="px-6 py-10 text-center text-gray-500">
-            거래 내역이 없습니다. 새로운 내역을 추가해보세요!
+          <li className="px-6 py-20 text-center flex flex-col items-center justify-center space-y-4">
+            <div className="p-4 bg-gray-50 rounded-full text-gray-300">
+              <Icons.SearchX size={40} strokeWidth={1.5} />
+            </div>
+            <div className="space-y-1">
+              <p className="font-black text-gray-400">
+                {filters && (filters.keyword || filters.type !== 'all' || filters.categoryId !== 'all')
+                  ? '검색 결과가 없습니다.'
+                  : '거래 내역이 없습니다.'}
+              </p>
+              <p className="text-xs font-bold text-gray-300">다른 필터를 적용하거나 새로운 내역을 추가해보세요.</p>
+            </div>
           </li>
         ) : (
           transactions.map((t) => (
-            <li key={t.id} className="px-6 py-4 hover:bg-gray-50 transition-colors group">
+            <li key={t.id} className="px-6 py-5 hover:bg-gray-50/50 transition-all group relative">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  {/* 카테고리 색상바와 아이콘 표시 */}
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center space-x-5">
+                  <div className="flex items-center gap-2.5 flex-shrink-0">
                     <div 
-                      className="w-1.5 h-8 rounded-full shadow-sm"
+                      className="w-2 h-10 rounded-full shadow-sm"
                       style={{ backgroundColor: t.categories?.color || '#6B7280' }}
                     />
-                    <div className="p-2 rounded-lg bg-white shadow-sm text-gray-600">
+                    <div className="p-2.5 rounded-xl bg-white border border-gray-100 shadow-sm text-gray-600 group-hover:scale-110 transition-transform">
                       {(() => {
                         const IconComp = (Icons as any)[t.categories?.icon || 'Tag'] || Icons.Tag
-                        return <IconComp size={18} strokeWidth={2} />
+                        return <IconComp size={22} strokeWidth={2.5} />
                       })()}
                     </div>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-xs font-medium text-gray-400 mb-0.5">{t.date}</span>
-                    <span className="font-bold text-gray-900 leading-tight">{t.description || '메모 없음'}</span>
-                    <span className="text-xs text-gray-500 mt-0.5">{t.categories?.name}</span>
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1.5">{t.date}</span>
+                    <span className="font-black text-gray-900 leading-tight text-lg">{t.description || '메모 없음'}</span>
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      <span className="text-[11px] font-black px-2 py-0.5 rounded-lg bg-gray-100 text-gray-500 uppercase">{t.categories?.name}</span>
+                      <span className={`text-[11px] font-black px-2 py-0.5 rounded-lg ${t.type === 'income' ? 'bg-blue-50 text-blue-500' : 'bg-rose-50 text-rose-500'} uppercase`}>
+                        {t.type === 'income' ? '수입' : '지출'}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <div className={`text-lg font-bold ${t.type === 'income' ? 'text-blue-600' : 'text-red-600'}`}>
-                    {t.type === 'income' ? '+' : '-'} {Number(t.amount).toLocaleString()}원
+                <div className="flex items-center space-x-6">
+                  <div className={`text-xl font-black ${t.type === 'income' ? 'text-indigo-600' : 'text-rose-500'}`}>
+                    {t.type === 'income' ? '+' : '-'} {Number(t.amount).toLocaleString()}
+                    <span className="text-sm ml-0.5">원</span>
                   </div>
-                  <div className="flex opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
                     <button
                       onClick={() => onEdit(t)}
-                      className="p-1 text-gray-400 hover:text-blue-500"
+                      className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
                       title="수정"
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                      </svg>
+                      <Icons.Pencil size={18} strokeWidth={2.5} />
                     </button>
                     <button
                       onClick={() => handleDelete(t.id)}
-                      className="p-1 text-gray-400 hover:text-red-500"
+                      className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
                       title="삭제"
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
+                      <Icons.Trash2 size={18} strokeWidth={2.5} />
                     </button>
                   </div>
                 </div>
